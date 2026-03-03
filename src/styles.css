@@ -1,0 +1,358 @@
+:root {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji",
+    "Segoe UI Emoji";
+  line-height: 1.4;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #0b0c10;
+  color: #e6e6e6;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+}
+
+.app.javaCollapsed {
+  grid-template-columns: 1fr;
+}
+
+.app.javaCollapsed .mainPanel {
+  grid-column: 1 / -1;
+}
+
+.app.withExec {
+  grid-template-rows: minmax(0, 58vh) minmax(0, 42vh);
+}
+
+.app.withExec.execCollapsed {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.panel {
+  background: #111218;
+  border: 1px solid #222437;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Painel de execução deve ocupar a largura toda (2 colunas). */
+.execPanel {
+  grid-column: 1 / -1;
+  min-height: 0;
+}
+
+.execPanel.collapsed {
+  min-height: auto;
+}
+
+.execResizeHandle {
+  align-self: center;
+  width: 120px;
+  height: 14px;
+  margin-top: 4px;
+  margin-bottom: 2px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: ns-resize;
+  padding: 0;
+}
+
+.execResizeHandle::before {
+  content: '';
+  display: block;
+  width: 72px;
+  height: 4px;
+  border-radius: 999px;
+  margin: 0 auto;
+  background: #2a2d45;
+}
+
+.execResizeHandle:hover::before,
+.execResizeHandle:active::before {
+  background: #3b4f82;
+}
+
+.app.execFullscreen {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+}
+
+.app.execFullscreen .panel:not(.execPanel) {
+  display: none;
+}
+
+.app.execFullscreen .execPanel {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  border-radius: 0;
+  border: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+@media (max-width: 980px) {
+  .app {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right))
+      max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+    gap: 8px;
+  }
+  .execPanel {
+    grid-column: auto;
+  }
+  .execResizeHandle {
+    display: none;
+  }
+}
+
+.panel header {
+  padding: 10px 12px;
+  border-bottom: 1px solid #222437;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panel header h1, .panel header h2 {
+  font-size: 14px;
+  margin: 0;
+  letter-spacing: 0.2px;
+  font-weight: 650;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tabButton {
+  border: 1px solid #2a2d45;
+  background: #0f1020;
+  color: #b8bfd6;
+}
+
+.tabButton.active {
+  background: #1f2a48;
+  color: #e6e6e6;
+  border-color: #3b4f82;
+}
+
+.mainHeader {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.mainActions {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.javaToggleToolbar {
+  justify-content: flex-end;
+  min-width: 130px;
+}
+
+button {
+  border: 1px solid #2a2d45;
+  background: #171a27;
+  color: #e6e6e6;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+}
+button:hover { background: #1b1f30; }
+
+.workspaceHost {
+  flex: 1;
+  min-height: 0;
+}
+
+.code {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  white-space: pre;
+  background: #0f1020;
+}
+
+small.muted { opacity: 0.75; }
+
+.execGrid {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.execConsole {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.execConsole .code {
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.liveInput {
+  flex: 1;
+  background: #0f1020;
+  border: 1px solid #2a2d45;
+  color: #e6e6e6;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.liveInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.liveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 5, 12, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.dialogCard {
+  width: min(540px, 100%);
+  background: #111218;
+  border: 1px solid #2a2d45;
+  border-radius: 12px;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.dialogCard h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.dialogCard p {
+  margin: 0 0 12px 0;
+  opacity: 0.9;
+  white-space: pre-line;
+}
+
+.dialogInput {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dialogActions {
+  margin-top: 12px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 980px) {
+  .mainHeader {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .mainHeader h1 {
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mainActions {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mainActions button {
+    flex: 0 0 auto;
+  }
+  .javaToggleToolbar {
+    justify-content: flex-start;
+    min-width: 0;
+  }
+  .panel header {
+    padding: 8px;
+  }
+  .toolbar {
+    gap: 6px;
+  }
+  button {
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+  .code {
+    padding: 10px;
+    font-size: 11px;
+  }
+  .execGrid {
+    padding: 8px;
+    gap: 8px;
+  }
+  .inputRow {
+    flex-direction: column;
+  }
+  .liveButton {
+    width: 100%;
+  }
+}
