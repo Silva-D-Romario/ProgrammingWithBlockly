@@ -301,7 +301,19 @@ export function registerCustomBlocks() {
         output: 'Number',
         colour: '%{BKY_MATH_HUE}',
         helpUrl: '%{BKY_MATH_ARITHMETIC_HELPURL}',
-        tooltip: '%{BKY_MATH_ARITHMETIC_TOOLTIP}',
+      })
+
+      this.setTooltip(() => {
+        const op = this.getFieldValue('OP')
+        const tooltips: Record<string, string> = {
+          ADD: Blockly.Msg.MATH_ARITHMETIC_TOOLTIP_ADD,
+          MINUS: Blockly.Msg.MATH_ARITHMETIC_TOOLTIP_MINUS,
+          MULTIPLY: Blockly.Msg.MATH_ARITHMETIC_TOOLTIP_MULTIPLY,
+          DIVIDE: Blockly.Msg.MATH_ARITHMETIC_TOOLTIP_DIVIDE,
+          POWER: Blockly.Msg.MATH_ARITHMETIC_TOOLTIP_POWER,
+          MOD: Blockly.Msg.MATH_MODULO_TOOLTIP,
+        }
+        return tooltips[op] ?? ''
       })
     },
   }

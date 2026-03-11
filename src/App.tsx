@@ -19,7 +19,8 @@ type DialogState =
       message: string
       confirmLabel: string
       cancelLabel: string
-      resolve: (accepted: boolean) => void
+      extraLabel?: string
+      resolve: (action: 'confirm' | 'cancel' | 'extra') => void
     }
   | {
       kind: 'prompt'
@@ -117,7 +118,7 @@ export default function App() {
         message,
         confirmLabel: 'Confirmar',
         cancelLabel: 'Cancelar',
-      }).then(callback)
+      }).then((result) => callback(result === 'confirm'))
     })
     Blockly.dialog.setPrompt((message, defaultValue, callback) => {
       askPrompt({
@@ -255,13 +256,18 @@ export default function App() {
   const onNewWorkspace = async () => {
     const ws = workspaceRef.current?.workspace
     if (!ws) return
-    const confirmed = await askConfirm({
+    const action = await askConfirm({
       title: 'Novo Workspace',
       message: 'Deseja criar um novo workspace?\n\nSugestão: salve os blocos antes em "Salvar".',
       confirmLabel: 'Criar Novo',
       cancelLabel: 'Cancelar',
+      extraLabel: 'Salvar e Criar',
     })
-    if (!confirmed) return
+    if (action === 'cancel') return
+    if (action === 'extra') {
+      const saved = await saveWorkspaceToFile(ws)
+      if (!saved) return
+    }
 
     // se estiver rodando, interrompe
     runIdRef.current += 1
@@ -299,32 +305,7 @@ export default function App() {
     const ws = workspaceRef.current?.workspace
     if (!ws) return
 
-    try {
-      const suggestedName = buildWorkspaceFileBaseName(ws)
-      const chosenName = await askPrompt({
-        title: 'Salvar Workspace',
-        message: 'Nome do arquivo:',
-        defaultValue: suggestedName,
-        confirmLabel: 'Salvar',
-        cancelLabel: 'Cancelar',
-      })
-      if (chosenName === null) return
-      const safeName = sanitizeFileName(chosenName.trim() || suggestedName)
-      const state = Blockly.serialization.workspaces.save(ws)
-      const json = JSON.stringify(state, null, 2)
-      const blob = new Blob([json], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${safeName}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-      setStatus('Blocos salvos em arquivo JSON.')
-    } catch {
-      setStatus('Erro ao salvar os blocos.')
-    }
+    await saveWorkspaceToFile(ws)
   }
 
   const onLoadBlocksClick = () => {
@@ -680,6 +661,9 @@ export default function App() {
 
             <div className="dialogActions">
               <button onClick={cancelDialog}>{dialogState.cancelLabel}</button>
+              {dialogState.kind === 'confirm' && dialogState.extraLabel && (
+                <button onClick={extraDialogAction}>{dialogState.extraLabel}</button>
+              )}
               <button onClick={confirmDialog}>{dialogState.confirmLabel}</button>
             </div>
           </div>
@@ -693,14 +677,16 @@ export default function App() {
     message: string
     confirmLabel: string
     cancelLabel: string
+    extraLabel?: string
   }) {
-    return new Promise<boolean>((resolve) => {
+    return new Promise<'confirm' | 'cancel' | 'extra'>((resolve) => {
       setDialogState({
         kind: 'confirm',
         title: args.title,
         message: args.message,
         confirmLabel: args.confirmLabel,
         cancelLabel: args.cancelLabel,
+        extraLabel: args.extraLabel,
         resolve,
       })
     })
@@ -730,7 +716,7 @@ export default function App() {
   function cancelDialog() {
     const current = dialogState
     if (current.kind === 'closed') return
-    if (current.kind === 'confirm') current.resolve(false)
+    if (current.kind === 'confirm') current.resolve('cancel')
     if (current.kind === 'prompt') current.resolve(null)
     setDialogState({ kind: 'closed' })
   }
@@ -738,9 +724,47 @@ export default function App() {
   function confirmDialog() {
     const current = dialogState
     if (current.kind === 'closed') return
-    if (current.kind === 'confirm') current.resolve(true)
+    if (current.kind === 'confirm') current.resolve('confirm')
     if (current.kind === 'prompt') current.resolve(dialogInputValue)
     setDialogState({ kind: 'closed' })
+  }
+
+  function extraDialogAction() {
+    const current = dialogState
+    if (current.kind !== 'confirm' || !current.extraLabel) return
+    current.resolve('extra')
+    setDialogState({ kind: 'closed' })
+  }
+
+  async function saveWorkspaceToFile(ws: Blockly.Workspace) {
+    try {
+      const suggestedName = buildWorkspaceFileBaseName(ws)
+      const chosenName = await askPrompt({
+        title: 'Salvar Workspace',
+        message: 'Nome do arquivo:',
+        defaultValue: suggestedName,
+        confirmLabel: 'Salvar',
+        cancelLabel: 'Cancelar',
+      })
+      if (chosenName === null) return false
+      const safeName = sanitizeFileName(chosenName.trim() || suggestedName)
+      const state = Blockly.serialization.workspaces.save(ws)
+      const json = JSON.stringify(state, null, 2)
+      const blob = new Blob([json], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${safeName}.json`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+      setStatus('Blocos salvos em arquivo JSON.')
+      return true
+    } catch {
+      setStatus('Erro ao salvar os blocos.')
+      return false
+    }
   }
 }
 
