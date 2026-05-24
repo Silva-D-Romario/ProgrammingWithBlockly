@@ -67,6 +67,12 @@ function ensureGenerator() {
     const name = getVarName(block, 'VAR')
     const value = gen.valueToCode(block, 'VALUE', (gen as any).ORDER_NONE) || '0'
     const op = block.getFieldValue('ASSIGN_OP') || 'ASSIGN'
+    
+    // Special case: if value is leia(), generate leia(name) instead of name <- leia()
+    if (value === 'leia()' && op === 'ASSIGN') {
+      return `leia(${name})\n`
+    }
+    
     if (op === 'ADD_ASSIGN') return `${name} <- ${name} + ${value}\n`
     if (op === 'SUB_ASSIGN') return `${name} <- ${name} - ${value}\n`
     if (op === 'MUL_ASSIGN') return `${name} <- ${name} * ${value}\n`
