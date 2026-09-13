@@ -53,7 +53,7 @@ O projeto foi feito para apoiar aprendizado de lógica de programação de forma
 1. Clone o repositório:
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
+git clone <https://github.com/Silva-D-Romario/ProgrammingWithBlockly.git>
 cd PWB-ProgrammingWithBlockly
 ```
 
